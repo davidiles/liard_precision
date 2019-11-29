@@ -5,8 +5,8 @@ my.packs <- c(
   'jagsUI',      # For Bayesian analysis
   'lme4',        # For Frequentist analysis
   'viridis',     # For plotting
-  'cowplot',     # For plotting
-  'optimx'       # For fitting models
+  'cowplot'#,     # For plotting
+  #'optimx'       # For fitting models
 )
 
 # if any of them are not installed, install them
@@ -22,7 +22,7 @@ rm(list=ls())
 
 all.summary = data.frame()
 
-for (current.species in "PHVI"){#c("ALFL","AMRO","CHSP","GRAJ","PHVI","REVI","WETA")){ 
+for (current.species in "ALFL"){#c("ALFL","AMRO","CHSP","GRAJ","PHVI","REVI","WETA")){ 
   
   # Load data
   dat = read.csv(paste0("./data/",current.species,".csv"))
@@ -76,7 +76,7 @@ for (current.species in "PHVI"){#c("ALFL","AMRO","CHSP","GRAJ","PHVI","REVI","WE
   tryCatch({
   fit.glmer = glmer(count ~ year + (1|stand) + (1|year) + (1|observation) +
                       offset(log(nstation)), 
-                    data = glmer.data, family = "poisson", control = glmerControl(optimizer ='optimx', optCtrl=list(method='L-BFGS-B')))
+                    data = glmer.data, family = "poisson", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
   
   # Extract estimates of intercept and trend
   intercept = as.numeric(fixef(fit.glmer)[1]) # intercept on log scale
@@ -126,7 +126,7 @@ for (current.species in "PHVI"){#c("ALFL","AMRO","CHSP","GRAJ","PHVI","REVI","WE
   # 
   #   tryCatch({
   #     fit.glmer.sim = glmer(observed.sim ~ year + (1|stand) + (1|year) + (1|observation) +
-  #                             offset(log(nstation)), data = glmer.data, family = "poisson", control = glmerControl(optimizer ='optimx', optCtrl=list(method='L-BFGS-B')))
+  #                             offset(log(nstation)), data = glmer.data, family = "poisson", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
   #   }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   # 
   #   expected.sim = predict(fit.glmer.sim, type = "response")
@@ -240,7 +240,7 @@ for (current.species in c("ALFL")){
   tryCatch({
     fit.glmer = glmer(count ~ year + (1|stand) + (1|year) + (1|observation) +
                         offset(log(nstation)), 
-                      data = glmer.data, family = "poisson", control = glmerControl(optimizer ='optimx', optCtrl=list(method='L-BFGS-B')))
+                      data = glmer.data, family = "poisson", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
     
     # Extract estimates of intercept and trend
     intercept = as.numeric(fixef(fit.glmer)[1]) # intercept on log scale
@@ -308,7 +308,8 @@ for (current.species in c("ALFL")){
   #-------------------------------------------------------------
   nrep = 100 # Repeat the process XX times (probably want to do this 100 times at least)
   
-  ci.width.matrix = matrix(NA, nrow = nrep, ncol = length(year_sequence)) # Matrix to store results (width of confidence interval) for each iteration
+  # Matrix to store results (width of confidence interval) and convergence code for each iteration
+  convergence.matrix = ci.width.matrix = matrix(NA, nrow = nrep, ncol = length(year_sequence)) 
   for (reps in 1:nrep){
     
     year.effects = rnorm(n.years,0,temporal.sd)
@@ -329,11 +330,12 @@ for (current.species in c("ALFL")){
         fit.glmer.new = glmer(count ~ year + (1|stand) + (1|year) + (1|observation)+
                                 offset(log(nstation)), 
                               data = subset(newdata, year <= last.year), 
-                              family = "poisson", control = glmerControl(optimizer ='optimx', optCtrl=list(method='L-BFGS-B')))
+                              family = "poisson", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
         
         trend.ci.new = confint(fit.glmer.new, "year")
         ci.width.new = trend.ci.new[2] - trend.ci.new[1]
       }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+      
       
       # Store precision estimates in matrix
       ci.width.matrix[reps, which(year_sequence == last.year)] = ci.width.new
