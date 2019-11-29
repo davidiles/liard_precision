@@ -28,7 +28,7 @@ rm(list=ls())
 # 3. Estimate trend up to that point and record precision
 
 summary_data = data.frame()
-for (current.species in c("ALFL")){ 
+for (current.species in c("PHVI")){ 
   
   # Load data
   dat = read.csv(paste0("./data/",current.species,".csv"))
@@ -184,6 +184,7 @@ for (current.species in c("ALFL")){
         
         theme_bw()+
         scale_color_manual(values = rep("gray50",length(unique(summary_data$rep))), guide = FALSE)+
+        xlab("Year")+
         facet_wrap(species~.)
       print(progress_plot)
       
@@ -193,3 +194,20 @@ for (current.species in c("ALFL")){
   } # end reps loop
   
 } # end species loop
+
+progress_plot = ggplot(data = summary_data) +
+  
+  #Results for each simulated dataset
+  geom_point(aes(x = year.abs, y = ci.width, col = factor(rep)), alpha = 0.5)+
+  geom_line(aes(x = year.abs, y = ci.width, col = factor(rep)), alpha = 0.5)+
+  
+  #Average results
+  geom_line(data = aggregate(ci.width ~ year.abs, data = summary_data, FUN = mean, na.rm = TRUE), aes(x = year.abs, y = ci.width), col = "black")+
+  
+  geom_hline(yintercept = 0.035, linetype = 2)+ # Arbitrary precision threshold
+  
+  theme_bw()+
+  scale_color_manual(values = rep("gray50",length(unique(summary_data$rep))), guide = FALSE)+
+  xlab("Year")+
+  facet_wrap(species~.)
+print(progress_plot)
