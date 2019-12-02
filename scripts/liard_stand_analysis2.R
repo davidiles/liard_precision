@@ -28,10 +28,10 @@ rm(list=ls())
 # 3. Estimate trend up to that point and record precision
 
 summary_data = data.frame()
-for (current.species in c("PHVI")){ 
+for (current.species in c("CHSP")){ 
   
   # Load data
-  dat = read.csv(paste0("./data/",current.species,".csv"))
+  dat = read.csv(paste0("../data/",current.species,".csv"))
   
   #-------------------------------------
   # Restructure data for stand-level analysis
@@ -114,10 +114,11 @@ for (current.species in c("PHVI")){
     
     newdata$count = NA
     
-    for (stand in unique(newdata$stand)){
-      assigned.stand = sample(unique(data.stand$stand),1)
-      for (year in unique(newdata$year)){
-        assigned.year = sample(unique(data.stand$year),1)
+    for (year in unique(newdata$year)){
+      assigned.year = sample(unique(data.stand$year),1)
+      for (stand in unique(newdata$stand)){
+        assigned.stand = sample(unique(data.stand$stand),1)
+        
         assigned.data = subset(data.stand, stand == assigned.stand & year == assigned.year)
         for (v in 1:n.visit){
           newdata[which(newdata$stand == stand & newdata$year == year & newdata$round == v),c("nstation","count")] = subset(assigned.data,round == v)[,c("nstation","count")]
