@@ -114,15 +114,18 @@ for (current.species in c("CHSP")){
     
     newdata$count = NA
     
-    for (year in unique(newdata$year)){
-      assigned.year = sample(unique(data.stand$year),1)
-      for (stand in unique(newdata$stand)){
-        assigned.stand = sample(unique(data.stand$stand),1)
-        
-        assigned.data = subset(data.stand, stand == assigned.stand & year == assigned.year)
+    year.assignments = sample(unique(data.stand$year),n.years, replace = TRUE)
+    stand.assignments = sample(unique(data.stand$stand),n.stands, replace = TRUE)
+    
+    newdata_years = unique(newdata$year)
+    newdata_stands = unique(newdata$stand)
+    
+    for (i in 1:length(newdata_years)){
+      for (j in 1:length(unique(newdata$stand))){
+        assigned.data = subset(data.stand, stand == stand.assignments[j] & year == year.assignments[i])
         for (v in 1:n.visit){
-          newdata[which(newdata$stand == stand & newdata$year == year & newdata$round == v),c("nstation","count")] = subset(assigned.data,round == v)[,c("nstation","count")]
-          newdata[which(newdata$stand == stand & newdata$year == year & newdata$round == v),c("nstation","count")] = subset(assigned.data,round == v)[,c("nstation","count")]
+          newdata[which(newdata$stand == newdata_stands[j] & newdata$year == newdata_years[i] & newdata$round == v),c("nstation","count")] = subset(assigned.data,round == v)[,c("nstation","count")]
+          newdata[which(newdata$stand == newdata_stands[j] & newdata$year == newdata_years[i] & newdata$round == v),c("nstation","count")] = subset(assigned.data,round == v)[,c("nstation","count")]
         }
         
       }
