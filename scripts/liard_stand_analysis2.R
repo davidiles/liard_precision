@@ -249,6 +249,10 @@ for (current.species in species_to_run){
   all_results <- rbind(all_results, species_results)
 }
 
+# Remove rows with infinite and missing values
+all_results[all_results == Inf] = NA
+all_results <- na.omit(all_results)
+
 #------------------------------------------
 # Plot all results for all species
 #------------------------------------------
